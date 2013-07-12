@@ -1,0 +1,142 @@
+<?php
+
+/**
+ * Page Edit Per Role
+ * =====================
+ *
+ * @website https://github.com/bcartier/pw-selective-edit
+ * @author Brent Cartier <https://github.com/bcartier>
+ * @license GPL 3 <http://www.gnu.org/licenses/gpl-3.0.txt>
+ * 
+ * Add a field (role_page_selector) to roles that determines what Pages users of that role can edit. 
+ * Input a standard ProcessWire selector.
+ *
+ * The role must already have page-edit permission in order to get 
+ * edit access to pages matching the selector. Otherwise, they will only gain view access. 
+ *
+ * Original idea is from PageEditPerRole module by Ryan Cramer, http://processwire.com
+ * and Ryan Micua's work on PageEditPerRole, https://github.com/ryannmicua/PageEditPerRole
+ */
+
+class SelectivePageEdit extends WireData implements Module {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Selective Page Edit', 
+			'version' => 0.1, 
+			'summary' => 'Add a ProcessWire selector to a role to limit editing access.',
+			'singular' => true, 
+			'autoload' => true, 
+			);
+	}
+
+	/**
+	 * Attach our hooks to Page::editable and Page::viewable
+	 *
+	 */
+	public function init() {
+		$this->addHookAfter('Page::editable', $this, 'hookPageEditable'); 
+		$this->addHookAfter('Page::viewable', $this, 'hookPageEditable'); 
+	}
+
+	/**
+	 * Check if this page, or any ancestor pages, are editable
+	 *
+	 * From Netcarver
+	 *
+	 */
+	public function matchMySelector($page) {
+		
+		$selector = "";
+
+		$userRoles = $this->user->roles;
+
+		foreach($userRoles as $userRole){
+			if($userRole->role_page_selector){
+				$selector .= $userRole->role_page_selector;
+			}
+		}
+
+		if($selector != ""){
+			$pageList = $this->pages->find($selector);
+			$permission = $pageList->has($page);
+		} else {
+			$permission = false;
+		}
+
+		return $permission;
+	}
+
+	/**
+	 * Page::editable hook
+	 *
+	 */
+	public function hookPageEditable($event) {
+		if($event->return) return;
+
+		if($this->user->hasPermission('page-edit')) {
+			$event->return = $this->matchMySelector($event->object);
+		} else {
+			$event->return = false;
+		}
+	}
+
+	/**
+	 * Page::viewable hook
+	 *
+	 */
+	public function hookPageViewable($event) {
+		
+		if($event->return) return;
+		$event->return = $this->matchMySelector($event->object);
+	}
+
+	/**
+	 * Install the module and add the 'editable_pages' field to the user template
+	 *
+	 */
+	public function ___install() {
+		$field = new Field(); 
+		$field->name = 'role_page_selector';
+		$field->label = 'Standard ProcessWire Selector. Pages that match can be edited by users in this role.';
+		$field->labelFieldName = 'path';
+		$field->type = wire('modules')->get('FieldtypeText'); 
+		$field->inputfield = 'InputfieldText';
+		$field->description = 
+			'In order to edit pages, the user must also have a role with page-edit permission. ' . 
+			'If they do not have page-edit permission, they will only be able to view the selected pages.';
+		$field->save();
+
+		$fieldgroup = $this->fieldgroups->get('role');
+		$fieldgroup->add($field);
+		$fieldgroup->save();
+
+		$this->message("Added field 'role_page_selector' to the user template.");
+	}
+
+	/**
+	 * Uninstall 'editable_pages' field
+	 *
+	 */
+	public function ___uninstall() {
+		$field = $this->fields->get('role_page_selector');
+		$fieldgroup = $this->fieldgroups->get('role');
+		if($field && $fieldgroup) {
+			$fieldgroup->remove($field);
+			$fieldgroup->save();
+		}
+		$this->fields->delete($field);
+		$this->message("Removed field: role_page_selector");
+	}
+
+	
+
+	/**
+	 * Build a form allowing configuration of this Module
+	 *
+	 */
+	static public function getModuleConfigInputfields(array $data) {
+
+	
+	}
+}
