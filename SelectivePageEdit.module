@@ -23,7 +23,7 @@ class SelectivePageEdit extends WireData implements Module {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Selective Page Edit', 
-			'version' => 2, 
+			'version' => 0.1, 
 			'summary' => 'Add a ProcessWire selector to a role to limit editing access.',
 			'singular' => true, 
 			'autoload' => true, 
