@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Selective Page Edit
+ * Page Edit Per Role
+ * =====================
+ *
+ * @website https://github.com/bcartier/pw-selective-edit
+ * @author Brent Cartier <https://github.com/bcartier>
+ * @license GPL 3 <http://www.gnu.org/licenses/gpl-3.0.txt>
  * 
- * Assign edit access to users on a per-page or per-branch basis.
+ * Add a field (role_page_selector) to roles that determines what Pages users of that role can edit. 
+ * Input a standard ProcessWire selector.
  *
- * The user must already have page-edit permission on one of their roles in order to get 
- * edit access to assigned pages. Otherwise, they will only gain view access. 
+ * The role must already have page-edit permission in order to get 
+ * edit access to pages matching the selector. Otherwise, they will only gain view access. 
  *
- * This module is fully functional as-is, but intended as a proof-of-concept for those wanting
- * to go further with adding custom edit and/or view access.
- *
- * Copyright 2013 by Ryan Cramer 
- * http://processwire.com
- *
- * Per-branch editable additions by Netcarver, January 2013. 
- *
+ * Original idea is from PageEditPerRole module by Ryan Cramer, http://processwire.com
+ * and Ryan Micua's work on PageEditPerRole, https://github.com/ryannmicua/PageEditPerRole
  */
 
 class SelectivePageEdit extends WireData implements Module {
@@ -98,7 +98,7 @@ class SelectivePageEdit extends WireData implements Module {
 	public function ___install() {
 		$field = new Field(); 
 		$field->name = 'role_page_selector';
-		$field->label = 'Selector that determines the Pages users in the rolemay edit';
+		$field->label = 'Standard ProcessWire Selector. Pages that match can be edited by users in this role.';
 		$field->labelFieldName = 'path';
 		$field->type = wire('modules')->get('FieldtypeText'); 
 		$field->inputfield = 'InputfieldText';
@@ -140,4 +140,3 @@ class SelectivePageEdit extends WireData implements Module {
 	
 	}
 }
-
