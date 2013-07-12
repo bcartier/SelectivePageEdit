@@ -1,6 +1,6 @@
 # Selective Page Edit
 
-## Use a Selector at the Role-level to grant edit access to a selective group of Pages. 
+Use a Selector at the Role-level to grant edit access to a selective group of Pages. 
 
 ### Overview
 
